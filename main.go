@@ -8,6 +8,7 @@ import (
 
 	"golang-techque/database"
 	"golang-techque/middleware"
+	"golang-techque/routes"
 )
 
 var foodCollections *mongo.Collection = database.OpenCollection(database.Client, "food")
@@ -26,7 +27,7 @@ func main() {
 
 	router := gin.New()
 	router.Use(gin.Logger())
-	router.UserRoutes(router)
+	routes.UserRoutes(router)
 	router.Use(middleware.Authentication())
 
 	routes.FoodRoutes(router)
@@ -35,6 +36,7 @@ func main() {
 	routes.OrderRoutes(router)
 	routes.OrderItemRoutes(router)
 	routes.InvoicesRoutes(router)
+	routes.UserRoutes(router)
 
 	router.Run(":" + port)
 
