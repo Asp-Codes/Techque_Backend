@@ -95,6 +95,10 @@ func CreateMenuItem() gin.HandlerFunc {
 	}
 }
 
+func inTimeSpan(start, end, check time.Time) bool {
+	return start.After(time.Now()) && end.After(time.Now())
+}
+
 func UpdateMenuItem() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
@@ -112,14 +116,14 @@ func UpdateMenuItem() gin.HandlerFunc {
 		var updateObj primitive.D
 
 		if menu.Start_date != nil && menu.End_date != nil {
-			if !inTimeSpan(*menu.Start_date, *&menu.Menu_id, time.Now()) {
+			if !inTimeSpan(*menu.Start_date, *menu.End_date, time.Now()) {
 				msg := "kindly recheck the time"
 				c.JSON(http.StatusInternalServerError, gin.H{"error": msg})
 				defer cancel()
 				return
 			}
 
-			updateObj = append(updateObj, bson.E{"start_date", menu.Start_date})
+			updateObj = append(updateObj, bson.E{Key: "start_date", Value: menu.Start_date})
 			updateObj = append(updateObj, bson.E{"end_date", menu.End_date})
 
 			if menu.Name != "" {
@@ -142,7 +146,7 @@ func UpdateMenuItem() gin.HandlerFunc {
 			result, err := menuCollection.UpdateOne(
 				ctx,
 				filter,
-				bson.D{{"$set", updateObj}},
+				bson.D{{Key: "$set", Value: updateObj}},
 				&opt,
 			)
 
