@@ -13,4 +13,5 @@ type Table struct {
 	Created_at       time.Time          `json:"created_at"`
 	Updated_at       time.Time          `json:"updated_at"`
 	Table_id         string             `json:"table_id"`
+	Status           *string            `json:"status" validate:"eq=OCCUPIED|eq=VACANT"`
 }
