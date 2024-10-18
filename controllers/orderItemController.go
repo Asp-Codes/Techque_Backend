@@ -26,7 +26,7 @@ func GetOrderItems() gin.HandlerFunc {
 
 		var allorders []models.OrderItem
 
-		result, err := orderItemCollectioon.Find(ctx, bson.M{})
+		result, err := orderItemCollection.Find(ctx, bson.M{})
 		if err != nil {
 			c.JSON(500, gin.H{"error": "error fetching order items"})
 			return
@@ -62,14 +62,14 @@ func ItemsByOrder(orderId string) (orderItems []primitive.M, err error) {
 
 	//using pipeline
 
-	matchStage := bson.D{{"$match", bson.D{{"order_id", orderId}}}} //getting the orders seperated here
-	lookupStage := bson.D{{"$lookup", bson.D{{"from", "food"}, {"localField", "food_id"}, {"foreignField", "food_id"}, {"as", "food"}}}}
-	unwindStage := bson.D{{"$unwind", bson.D{{"path", "$food"}, {"preserveNullAndEmptyArrays", true}}}}
+	matchStage := bson.D{{Key: "$match", Value: bson.D{{Key: "order_id", Value: orderId}}}} //getting the orders seperated here
+	lookupStage := bson.D{{Key: "$lookup", Value: bson.D{{Key: "from", Value: "food"}, {Key: "localField", Value: "food_id"}, {Key: "foreignField", Value: "food_id"}, {Key: "as", Value: "food"}}}}
+	unwindStage := bson.D{{Key: "$unwind", Value: bson.D{{Key: "path", Value: "$food"}, {Key: "preserveNullAndEmptyArrays", Value: true}}}}
 
-	lookupOrderStage := bson.D{{"$lookup", bson.D{{"from", "order"}, {"localField", "order_id"}, {"foreignField", "order_id"}, {"as", "order"}}}}
-	unwindOrderStage := bson.D{{"$unwind", bson.D{{"path", "$order"}, {"preserveNullAndEmptyArrays", true}}}}
+	lookupOrderStage := bson.D{{Key: "$lookup", Value: bson.D{{Key: "from", Value: "order"}, {Key: "localField", Value: "order_id"}, {Key: "foreignField", Value: "order_id"}, {"as", "order"}}}}
+	unwindOrderStage := bson.D{{Key: "$unwind", Value: bson.D{{Key: "path", Value: "$order"}, {Key: "preserveNullAndEmptyArrays", Value: true}}}}
 
-	lookupTableStage := bson.D{{"$lookup", bson.D{{"from", "table"}, {"localField", "table_id"}, {"foreignField", "table_id"}, {"as", "table"}}}}
+	lookupTableStage := bson.D{{Key: "$lookup", Value: bson.D{{Key: "from", Value: "table"}, {Key: "localField", Value: "table_id"}, {Key: "foreignField", Value: "table_id"}, {Key: "as", Value: "table"}}}}
 	unwindTableStage := bson.D{{"$unwind", bson.D{{"path", "$table"}, {"preserveNullAndEmptyArrays", true}}}}
 
 	projectStage := bson.D{
@@ -88,20 +88,20 @@ func ItemsByOrder(orderId string) (orderItems []primitive.M, err error) {
 			}},
 	}
 
-	groupStage := bson.D{{"$group", bson.D{{"_id", bson.D{{"order_id", "$order_id"}, {"table_id", "$table_id"}, {"table_number", "$table_number"}}}, {"payment_due", bson.D{{"$sum", "$amount"}}}, {"table_count", bson.D{{"$sum", 1}}}, {"order_items", bson.D{{"$push", bson.D{{"food_name", "$food_name"}, {"food_image", "$food_image"}, {"price", "$price"}, {"quantity", "$quantity"}}}}}}}}
+	groupStage := bson.D{{Key: "$group", Value: bson.D{{Key: "_id", Value: bson.D{{Key: "order_id", Value: "$order_id"}, {Key: "table_id", Value: "$table_id"}, {Key: "table_number", Value: "$table_number"}}}, {Key: "payment_due", Value: bson.D{{Key: "$sum", Value: "$amount"}}}, {Key: "table_count", Value: bson.D{{Key: "$sum", Value: 1}}}, {Key: "order_items", Value: bson.D{{Key: "$push", Value: "$$ROOT"}}}}}}
 
 	projectStage2 := bson.D{
 		{
-			"$project", bson.D{
-				{"_id", 0},
-				{"payment_due", 1},
-				{"table_count", 1},
-				{"table_number", "$_id.table_number"},
-				{"order_items", 1},
+			Key: "$project", Value: bson.D{
+				{Key: "_id", Value: 0},
+				{Key: "payment_due", Value: 1},
+				{Key: "table_count", Value: 1},
+				{Key: "table_number", Value: "$_id.table_number"},
+				{Key: "order_items", Value: 1},
 			}},
 	}
 
-	result, err := orderItemCollection.Aggregrate(ctx, mongo.Pipeline{
+	result, err := orderItemCollection.Aggregate(ctx, mongo.Pipeline{
 		matchStage,
 		lookupStage,
 		unwindStage,
@@ -186,7 +186,7 @@ func CreateOrderItem() gin.HandlerFunc {
 			orderItemsToBeInserted = append(orderItemsToBeInserted, orderItem)
 		}
 
-		insertedOrderItems, err := orderItemCollectioon.InsertMany(ctx, orderItemsToBeInserted)
+		insertedOrderItems, err := orderItemCollection.InsertMany(ctx, orderItemsToBeInserted)
 		if err != nil {
 			c.JSON(500, gin.H{"error": "error inserting order items"})
 			return
@@ -228,7 +228,7 @@ func UpdateOrderItem() gin.HandlerFunc {
 			Upsert: &upsert,
 		}
 
-		result, err := orderItemCollectioon.UpdateOne(
+		result, err := orderItemCollection.UpdateOne(
 			ctx,
 			filter,
 			bson.D{{

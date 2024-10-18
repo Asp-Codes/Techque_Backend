@@ -7,8 +7,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 
 	"golang-techque/database"
-	"golang-techque/middleware"
-	"golang-techque/routes"
+	middleware "golang-techque/middleware"
+	routes "golang-techque/routes"
 )
 
 var foodCollections *mongo.Collection = database.OpenCollection(database.Client, "food")
