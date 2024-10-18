@@ -139,6 +139,7 @@ func UpdateFood() gin.HandlerFunc {
 		err := c.BindJSON(&food)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			defer cancel()
 			return
 		}
 

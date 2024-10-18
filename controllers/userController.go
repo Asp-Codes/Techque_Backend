@@ -23,6 +23,7 @@ func GetUsers() gin.HandlerFunc {
 
 		if err != nil {
 			c.JSON(500, gin.H{"error": "error fetching users"})
+			defer cancel()
 			return
 		}
 
@@ -30,6 +31,7 @@ func GetUsers() gin.HandlerFunc {
 
 		if err != nil {
 			c.JSON(500, gin.H{"error": "error decoding users"})
+			defer cancel()
 			return
 		}
 
@@ -52,6 +54,7 @@ func GetUser() gin.HandlerFunc {
 
 		if err != nil {
 			c.JSON(500, gin.H{"error": "error fetching user"})
+			defer cancel()
 			return
 		}
 
