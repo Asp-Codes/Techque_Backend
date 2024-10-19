@@ -36,7 +36,6 @@ func main() {
 	routes.OrderRoutes(router)
 	routes.OrderItemRoutes(router)
 	routes.InvoicesRoutes(router)
-	routes.UserRoutes(router)
 
 	router.Run(":" + port)
 

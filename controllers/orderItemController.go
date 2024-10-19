@@ -66,25 +66,25 @@ func ItemsByOrder(orderId string) (orderItems []primitive.M, err error) {
 	lookupStage := bson.D{{Key: "$lookup", Value: bson.D{{Key: "from", Value: "food"}, {Key: "localField", Value: "food_id"}, {Key: "foreignField", Value: "food_id"}, {Key: "as", Value: "food"}}}}
 	unwindStage := bson.D{{Key: "$unwind", Value: bson.D{{Key: "path", Value: "$food"}, {Key: "preserveNullAndEmptyArrays", Value: true}}}}
 
-	lookupOrderStage := bson.D{{Key: "$lookup", Value: bson.D{{Key: "from", Value: "order"}, {Key: "localField", Value: "order_id"}, {Key: "foreignField", Value: "order_id"}, {"as", "order"}}}}
+	lookupOrderStage := bson.D{{Key: "$lookup", Value: bson.D{{Key: "from", Value: "order"}, {Key: "localField", Value: "order_id"}, {Key: "foreignField", Value: "order_id"}, {Key: "as", Value: "order"}}}}
 	unwindOrderStage := bson.D{{Key: "$unwind", Value: bson.D{{Key: "path", Value: "$order"}, {Key: "preserveNullAndEmptyArrays", Value: true}}}}
 
 	lookupTableStage := bson.D{{Key: "$lookup", Value: bson.D{{Key: "from", Value: "table"}, {Key: "localField", Value: "table_id"}, {Key: "foreignField", Value: "table_id"}, {Key: "as", Value: "table"}}}}
-	unwindTableStage := bson.D{{"$unwind", bson.D{{"path", "$table"}, {"preserveNullAndEmptyArrays", true}}}}
+	unwindTableStage := bson.D{{Key: "$unwind", Value: bson.D{{Key: "path", Value: "$table"}, {Key: "preserveNullAndEmptyArrays", Value: true}}}}
 
 	projectStage := bson.D{
 		{
-			"$project", bson.D{
-				{"id", 0},
-				{"amount", "$food.price"},
-				{"total_count", 1},
-				{"food_name", "$food.name"},
-				{"food_image", "$food.food_image"},
-				{"table_number", "$table.table_number"},
-				{"table_id", "$table.table_id"},
-				{"order_id", "$order.order_id"},
-				{"price", "$food.price"},
-				{"quantity", 1},
+			Key: "$project", Value: bson.D{
+				{Key: "id", Value: 0},
+				{Key: "amount", Value: "$food.price"},
+				{Key: "total_count", Value: 1},
+				{Key: "food_name", Value: "$food.name"},
+				{Key: "food_image", Value: "$food.food_image"},
+				{Key: "table_number", Value: "$table.table_number"},
+				{Key: "table_id", Value: "$table.table_id"},
+				{Key: "order_id", Value: "$order.order_id"},
+				{Key: "price", Value: "$food.price"},
+				{Key: "quantity", Value: 1},
 			}},
 	}
 
