@@ -13,3 +13,5 @@ func TableRoutes(incomingRoutes *gin.Engine) {
 	incomingRoutes.PATCH("/tables/:table_id", controller.UpdateTable())
 	incomingRoutes.DELETE("/tables/:table_id", controller.DeleteTable())
 }
+
+//done

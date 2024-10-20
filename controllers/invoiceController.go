@@ -105,6 +105,8 @@ func CreateInvoice() gin.HandlerFunc {
 
 		invoice.Created_at, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
 		invoice.Updated_at, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
+		invoice.ID = primitive.NewObjectID()
+		invoice.Invoice_id = invoice.ID.Hex()
 		// invoice.Payment_due_date = invoice.Created_at.AddDate(0, 0, 1)
 
 		results, insertErr := invoiceCollection.InsertOne(ctx, invoice)

@@ -30,6 +30,7 @@ func GetOrders() gin.HandlerFunc {
 
 		if err != nil {
 			c.JSON(500, gin.H{"error": "error fetching orders"})
+			defer cancel()
 			return
 		}
 
@@ -39,6 +40,7 @@ func GetOrders() gin.HandlerFunc {
 
 		if err != nil {
 			log.Fatal(err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "error decoding orders"})
 		}
 		defer cancel()
 		c.JSON(http.StatusOK, allOrders)
@@ -108,7 +110,7 @@ func CreateOrder() gin.HandlerFunc {
 		order.ID = primitive.NewObjectID()
 		order.Order_id = order.ID.Hex() //hex to string
 
-		result, err := foodCollection.InsertOne(ctx, order)
+		result, err := orderCollection.InsertOne(ctx, order)
 
 		if err != nil {
 			msg := fmt.Sprintf("error creating order: %v", err)
