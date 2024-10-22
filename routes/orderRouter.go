@@ -12,6 +12,16 @@ func OrderRoutes(incomingRoutes *gin.Engine) {
 	incomingRoutes.POST("/orders", controller.CreateOrder())
 	incomingRoutes.PATCH("/orders/:order_id", controller.UpdateOrder())
 	incomingRoutes.DELETE("/orders/:order_id", controller.DeleteOrder())
+
+	//Queuing system
+	incomingRoutes.GET("/orders/queue", controller.GetQueues())
+	incomingRoutes.GET("/orders/queue/:queue_id", controller.GetQueue())
+	incomingRoutes.POST("/orders/queue", controller.CreateQueue())
+	incomingRoutes.PATCH("/orders/queue/:queue_id/total_orders", controller.UpdateQueue())
+	incomingRoutes.PATCH("/orders/queue/:queue_id/current_order", controller.UpdateQueueOrder()) //creating queue by admin
+
+	// incomingRoutes.PATCH("/orders/queue/:queue_id", controller.UpdateQueue());
+	//updating queue by admin
 }
 
 //done

@@ -95,6 +95,41 @@ func CreateMenuItem() gin.HandlerFunc {
 	}
 }
 
+func GetMenuItemsByMenuId() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+
+		menuID := c.Param("menu_id")
+
+		defer cancel()
+
+		matchStage := bson.D{{Key: "$match", Value: bson.D{{Key: "menu_id", Value: menuID}}}}
+
+		lookupStage := bson.D{{Key: "$lookup", Value: bson.D{{Key: "from", Value: "food"}, {Key: "localField", Value: "menu_id"}, {Key: "foreignField", Value: "menu_id"}, {Key: "as", Value: "menu_items"}}}}
+
+		unWindStage := bson.D{{Key: "$unwind", Value: bson.D{{Key: "path", Value: "$menu_items"}, {Key: "preserveNullAndEmptyArrays", Value: false}}}}
+
+		projectStage := bson.D{{Key: "$project", Value: bson.D{{Key: "category", Value: 1}, {Key: "name", Value: "$menu_items.name"}, {Key: "food_id", Value: "$menu_items.food_id"}, {Key: "price", Value: "$menu_items.price"}, {Key: "food_image", Value: "$menu_items.food_image"}}}}
+
+		cursor, err := menuCollection.Aggregate(ctx, mongo.Pipeline{matchStage, lookupStage, unWindStage, projectStage})
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "error fetching menu items"})
+			return
+		}
+
+		var menuItems []bson.M
+
+		if err = cursor.All(ctx, &menuItems); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "error fetching menu items"})
+			return
+		}
+
+		c.JSON(http.StatusOK, menuItems)
+
+	}
+}
+
 func inTimeSpan(start, end, check time.Time) bool {
 	return start.After(time.Now()) && end.After(time.Now())
 }
@@ -162,7 +197,26 @@ func UpdateMenuItem() gin.HandlerFunc {
 }
 
 func DeleteMenuItem() gin.HandlerFunc {
-	return func(c *gin.Context) {
+    return func(c *gin.Context) {
+        ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+        defer cancel() // Ensure the context is canceled at the end
 
-	}
+        menuID := c.Param("menu_id") // Get menu_id from URL parameters
+
+        // Attempt to delete the menu item from the database
+        result, err := menuCollection.DeleteOne(ctx, bson.M{"menu_id": menuID})
+        if err != nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": "error deleting menu item"})
+            return
+        }
+
+        // Check if any document was deleted
+        if result.DeletedCount == 0 {
+            c.JSON(http.StatusNotFound, gin.H{"error": "menu item not found"})
+            return
+        }
+
+        // Respond with success
+        c.JSON(http.StatusOK, gin.H{"message": "menu item deleted successfully"})
+    }
 }
